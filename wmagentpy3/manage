@@ -33,7 +33,7 @@ ORACLE_TNS=
 MYSQL_USER=
 MYSQL_PASS=
 if [ -z "$DBSOCK" ]; then
-    MYSQL_SOCK=$INSTALL_MYSQL/logs/mysql.sock 
+    MYSQL_SOCK=$INSTALL_MYSQL/logs/mysql.sock
 else
     MYSQL_SOCK=$DBSOCK
 fi
@@ -167,7 +167,7 @@ load_secrets_file(){
         echo "Secrets file doesnt contain COUCH_PASS";
         exit 1
     fi
-    
+
     COUCH_PORT=${MATCH_COUCH_PORT:-$COUCH_PORT};
     # if couch ssl certificate not specified check X509_USER_CERT and X509_USER_PROXY
     COUCH_CERT_FILE=${MATCH_COUCH_CERT_FILE:-${X509_USER_CERT:-$X509_USER_PROXY}};
@@ -180,21 +180,21 @@ load_secrets_file(){
     LOCAL_WORKQUEUE_DBNAME=${MATCH_LOCAL_WORKQUEUE_DBNAME:-$LOCAL_WORKQUEUE_DBNAME};
 
     WORKLOAD_SUMMARY_URL=${MATCH_WORKLOAD_SUMMARY_URL:-$WORKLOAD_SUMMARY_URL};
-    
+
     WMSTATS_URL=${MATCH_WMSTATS_URL:-$WMSTATS_URL}
 
     REQMGR2_URL=${MATCH_REQMGR2_URL:-$REQMGR2_URL}
-    
+
     ACDC_URL=${MATCH_ACDC_URL:-$ACDC_URL}
-    
+
     DBS3_URL=${MATCH_DBS3_URL:-$DBS3_URL}
 
     DQM_URL=${MATCH_DQM_URL:-$DQM_URL}
 
     REQUESTCOUCH_URL=${MATCH_REQUESTCOUCH_URL:-$REQUESTCOUCH_URL}
-    
+
     CENTRAL_LOGDB_URL=${MATCH_CENTRAL_LOGDB_URL:-$CENTRAL_LOGDB_URL}
-    
+
     WMARCHIVE_URL=${MATCH_WMARCHIVE_URL:-$WMARCHIVE_URL}
 
     AMQ_CREDENTIALS=${MATCH_AMQ_CREDENTIALS:-$AMQ_CREDENTIALS}
@@ -502,10 +502,12 @@ start_couch(){
 	echo "CouchDB has not been initialised... running pre initialisation";
 	init_couch_pre;
     fi
-    couchdb -b -a $CONFIG_COUCH/local.ini \
-            -p $INSTALL_COUCH/logs/couchdb.pid \
-            -e $INSTALL_COUCH/logs/stderr.log \
-            -o /dev/null
+    screen -dmS couchdb
+    screen -S couchdb -p 0 -X stuff 'source env_unittest_py3.sh && couchdb\n'
+    #couchdb -b -a $CONFIG_COUCH/local.ini \
+    #        -p $INSTALL_COUCH/logs/couchdb.pid \
+    #        -e $INSTALL_COUCH/logs/stderr.log \
+    #        -o /dev/null
     if [ $COUCH_INIT_DONE -eq 0 ]; then
 	echo "CouchDB has not been initialised... running post initialisation"
 	init_couch_post;
@@ -517,7 +519,8 @@ start_couch(){
 #
 stop_couch(){
     echo "stopping couch...";
-    couchdb  -d  -p $INSTALL_COUCH/logs/couchdb.pid;
+    screen -RX couchdb quit
+    #couchdb  -d  -p $INSTALL_COUCH/logs/couchdb.pid;
 }
 
 clean_couch(){
